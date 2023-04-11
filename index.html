@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+</head>
+<body>
+
+   <div id="app">
+
+   </div>
+   <script type="module">
+    import header from './header.js'
+    import todofilter from './todo-filter.js'
+
+    Vue.component("new-todo", {
+        template:`<button @click.ctrl.prevent="$emit('new-todo', {title:'new todo'})">Add Todo</button>`
+    });
+
+    Vue.component('todo-list', {
+        props:['todos'],
+        template:`<ul>
+            <todo-item v-for="t in todos" :todo="t"> </todo-item>
+        </ul>`
+    }); 
+
+    Vue.component('todo-item', {
+        props:['todo'],
+        template:`<li>{{ todo.title }} </li>`
+    }); 
+
+    window.app = new Vue({
+        el:"#app",
+        data: {
+            filter:'',
+            filtered_todos:[],
+            person: {
+                name:"john", 
+                address: {
+                    street:"straat", 
+                    houseno: 1
+                }
+            },
+            items: ['a', 'b', 'c'],
+            todos: [
+                {title:"test1"},
+                {title:"test2"},
+                {title:"test3"},
+                {title:"test4"},
+                {title:"test5"},
+            ]
+        },
+        watch: {
+            person: {
+                handler: function(){
+                    console.log("person veranderd!!!");
+                },
+                deep:true,
+            },
+            filter: {
+                handler: function () {
+                    this.filterlist(); 
+                },
+                immediate:true  
+            }
+        },
+        methods:{
+            filterlist() {
+                if (this.filter != '')
+                    this.filtered_todos = this.todos.filter(s => s.title == this.filter);
+                else 
+                    this.filtered_todos = this.todos;
+            },
+            addTodo(todo) {
+                this.todos.push(todo); 
+            }
+        },
+        components:{
+            'app-header':header,
+            'todo-filter': todofilter
+        },  // local component registration
+        template:`<div>
+            <div v-for="item in items">{{item}}</div>
+            <app-header></app-header>
+            <todo-filter @clear="filter = ''" @filter="filter = $event" :current="filter"></todo-filter>
+            <span v-if="filter">filtered on {{ filter }}</span>
+            <todo-list :todos="filtered_todos"></todo-list>
+            <new-todo @new-todo="addTodo($event)"></new-todo>
+        </div>`
+    });
+   </script>
+    
+</body>
+</html>
